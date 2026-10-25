@@ -1,3 +1,7 @@
 *.png
 *.exe
 rt
+*.obj
+*.mtl
+ex_rt
+.DS_Store

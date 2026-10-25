@@ -1,7 +1,6 @@
 /// include image write library and enable it
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-/// Uncomment these lines if you want to debug using couts
 #include <iostream>
 #include <vector>
 #include "Vector3.hpp"
@@ -10,22 +9,16 @@ using namespace std;
 
 int main()
 {
-  /// Example of how to debug with couts. 
-  /// You must uncomment the include and namespace lines above
-  // cout << "Hello, world" << endl;
-
   /// test vector addition and print result
-  Vector3 test_vector = Vector3{0, 0, 0};
-  test_vector += Vector3{1, 1, 1};
-
-  cout << test_vector << endl;
+  // Vector3 test_vector = Vector3{0, 0, 0};
+  // test_vector += Vector3{1, 1, 1};
+  // cout << test_vector << endl;
 
   /// set width/height of output image
   const int width = 640;
   const int height = 640;
 
   /// store RGB values for every pixel in 1D array
-  /// each pixel requires three values: red, green, blue
   unsigned char pixels[width * height * 3];
 
   /// define triangle using three vertices in 3D space
