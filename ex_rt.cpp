@@ -1,7 +1,7 @@
 /// "Import 3D Objects in C++" by EETechStuff on YouTube
 /// Part 1: https://www.youtube.com/watch?v=3bf1jmoQTOo
 /// Part 2: https://www.youtube.com/watch?v=lisdh3J7Np0
-/// "Reading & Writing Files in C++"
+/// "Reading & Writing Files in C++" 
 /// https://www.youtube.com/watch?v=kmGT5DjuTdk
 
 
@@ -24,7 +24,6 @@ public:
 
 /// ------------------------------- INITIALIZE --------------------------------
 
-
 /// final output for OBJ file numerical vectors
 std::vector<double> xVals;
 std::vector<double> yVals;
@@ -38,9 +37,12 @@ std::vector<Face> Faces;
 
 /// --------------------------------- METHODS ---------------------------------
 
-// void FileOpenError(const std::string& path)
-// {
-// }
+void FileOpenError(const std::string& path)
+{
+    std::cout << "Could not open: '" << path << "'" << std::endl;
+    std::cin.get();
+    exit(EXIT_FAILURE);
+}
 
 /// string methods
 std::vector<std::string> ReadFromTextFile(const std::string& path)
@@ -53,9 +55,8 @@ std::vector<std::string> ReadFromTextFile(const std::string& path)
     std::ifstream inputFile(path);
     if (!inputFile.is_open())
     {
-        // FileOpenError(path);
+        FileOpenError(path);
     }
-
     /// obtain pointer to string buffer for myStringStream and read into buffer
     /// myStringStream uses string buffer that contains sequence of characters
     /// which can be accessed directly as string object
@@ -78,15 +79,6 @@ std::vector<std::string> ReadFromTextFile(const std::string& path)
 }
 
 // void PrintVecString(std::vector<std::string> const& input)
-// {
-// }
-
-/// csv methods
-// void WriteToCSV(const std::string& path, std::string outString)
-// {
-// }
-
-// void ParseCSVtoDouble(std::vector<std::string> csvRecordStrings)
 // {
 // }
 
@@ -201,10 +193,14 @@ void ParseOBJ(std::vector<std::string> OBJRecordStrings)
     }
 } /// end ParseOBJ
 
-// void PrintOBJData()
-// {
-//     
-// }
+/// print number of vertices, normals, faces
+void PrintOBJData()
+{
+    std::cout << "Number of vertices: " << VertexPositions.size() << std::endl;
+    std::cout << "Number of normals: " << NormalVectors.size() << std::endl;
+    std::cout << "Number of faces: " << Faces.size() << std::endl << std::endl;
+
+}
 
 /// ---------------------------------- MAIN -----------------------------------
 
@@ -225,7 +221,8 @@ int main()
     if (fileSuffix == "obj")
     {
         ParseOBJ(RecordsStr);
-        // PrintOBJData();
+        PrintOBJData();
+        return 0;
     }
     /// if CSV file
     else if (fileSuffix == "csv")
@@ -245,7 +242,10 @@ int main()
     }
 
     std::cin.get(); 
+
+    return 0;
 }
+
 
 /// ---------------------------------------------------------------------------
 
