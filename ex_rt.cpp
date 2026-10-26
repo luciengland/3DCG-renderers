@@ -1,5 +1,9 @@
-/// "Import 3D Objects in C++ Part 1" by EETechStuff on YouTube
-/// https://www.youtube.com/watch?v=3bf1jmoQTOo
+/// "Import 3D Objects in C++" by EETechStuff on YouTube
+/// Part 1: https://www.youtube.com/watch?v=3bf1jmoQTOo
+/// Part 2: https://www.youtube.com/watch?v=lisdh3J7Np0
+/// "Reading & Writing Files in C++"
+/// https://www.youtube.com/watch?v=kmGT5DjuTdk
+
 
 #include <iostream>
 #include <fstream> /// ifstream, ofstream
@@ -34,10 +38,9 @@ std::vector<Face> Faces;
 
 /// --------------------------------- METHODS ---------------------------------
 
-void FileOpenError(const std::string& path)
-{
-    void;
-}
+// void FileOpenError(const std::string& path)
+// {
+// }
 
 /// string methods
 std::vector<std::string> ReadFromTextFile(const std::string& path)
@@ -50,7 +53,7 @@ std::vector<std::string> ReadFromTextFile(const std::string& path)
     std::ifstream inputFile(path);
     if (!inputFile.is_open())
     {
-        FileOpenError(path);
+        // FileOpenError(path);
     }
 
     /// obtain pointer to string buffer for myStringStream and read into buffer
@@ -76,25 +79,30 @@ std::vector<std::string> ReadFromTextFile(const std::string& path)
 
 // void PrintVecString(std::vector<std::string> const& input)
 // {
-    
 // }
 
 /// csv methods
 // void WriteToCSV(const std::string& path, std::string outString)
 // {
-    
 // }
 
 // void ParseCSVtoDouble(std::vector<std::string> csvRecordStrings)
 // {
-    
 // }
 
 /// obj methods
-// std::vector<uint32_t> ParseFaceIndices(std::string indexGroup)
-// {
-//     
-// }
+std::vector<uint32_t> ParseFaceIndices(std::string indexGroup)  /// "#/#/#"
+{
+    std::string value;
+    std::vector<uint32_t> indices;
+    /// parse string and convert to std::vector<uint32_t> with 3 elements
+    std::stringstream instream(indexGroup);
+    while (std::getline(instream, value, '/'))
+    {
+        indices.push_back(std::stoi(value));
+    }
+    return indices;
+}
 
 void ParseOBJ(std::vector<std::string> OBJRecordStrings)
 {
@@ -108,7 +116,7 @@ void ParseOBJ(std::vector<std::string> OBJRecordStrings)
     /// intermediate/individual numerical values
     std::vector<float> VertexPosition;  /// for lines starting with "v"
     std::vector<float> TextureCoordinate; /// for lines starting with "vt"
-    std::vector<float> NormalVectors; /// for lines starting with "vn"
+    std::vector<float> NormalVector; /// for lines starting with "vn"
 
     /// parse values from OBJ file 
     for (int i = 0; i < OBJRecordStrings.size(); i++)
@@ -117,9 +125,10 @@ void ParseOBJ(std::vector<std::string> OBJRecordStrings)
         /// check if starting character is "v" for each line
         while (std::getline(sstream, value, ' '))
         {
-            /// if start with "v", parse string values + put in vector<string>
+            /// if start with "v", parse string values & put in vector<string>
             if (value == "v")
             {
+                /// parse 3 values 
                 for (int j = 0; j < 3; j++)
                 {
                     std::getline(sstream, value, ' ');
@@ -128,17 +137,69 @@ void ParseOBJ(std::vector<std::string> OBJRecordStrings)
                 }
                 VertexPositions.push_back(VertexPosition);
             }
-            // if (value == "vt")
-            // {
-                
-            // }
-            // if (value == "f")
-            // {
-                
-            // }
+            /// parse 2 values 
+            if (value == "vt")
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    std::getline(sstream, value, ' ');
+                    float valFloat = std::stof(value);
+                    TextureCoordinate.push_back(valFloat);
+                }
+                TextureCoordinates.push_back(TextureCoordinate);
+            }
+            if (value == "vn")
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    std::getline(sstream, value, ' ');
+                    float valFloat = std::stof(value);
+                    NormalVector.push_back(valFloat);
+                }
+                NormalVectors.push_back(NormalVector);
+            }
+            if (value == "f")
+            {
+                /// use newline character to get entire line and return as value
+                while (std::getline(sstream, value))
+                {
+                    /// convert value into string stream
+                    std::stringstream facestream(value);
+                    /// parse line based on space delimiters
+                    while (std::getline(facestream, value, ' '))
+                    {
+                        Indices.push_back(ParseFaceIndices(value));
+                        vertsPerFace++;
+                    }
+                    VertsPerFace.push_back(vertsPerFace);
+                    vertsPerFace = 0;
+                }
+                numFaces++;
+            }
         }
     }
-}
+    /// take all Indices elements and create individual face components
+    /// b/c num verts can vary for each face, refer to VertsPerFace
+    /// vector which keeps track of number of verts defined in a line
+    uint32_t k = 0;
+    uint32_t j = 0;
+
+    for (uint32_t i = 0; i < numFaces; i++)
+    {
+        Face* face = new Face();
+        while (j < VertsPerFace[i])
+        {
+            face->VertexIndices.push_back(Indices[k][0]);
+            face->TextureIndices.push_back(Indices[k][1]);
+            face->NormalIndices.push_back(Indices[k][2]);
+            /// increment num verts defined in each line
+            j++;
+            k++;
+        }
+        j = 0;
+        Faces.push_back(*face);
+    }
+} /// end ParseOBJ
 
 // void PrintOBJData()
 // {
@@ -155,7 +216,7 @@ int main()
     std::vector<std::string> RecordsStr;
 
     /// get a vector of strings, each string reps each line in file
-    // RecordsStr = ReadFromTxtFile(filename);
+    RecordsStr = ReadFromTextFile(filename);
 
     /// extracting the last 3 characters of file name
     std::string fileSuffix = filename.substr(filename.length() - 3, filename.length());
@@ -163,7 +224,7 @@ int main()
     /// if OBJ file
     if (fileSuffix == "obj")
     {
-        // ParseOBJ(RecordsStr);
+        ParseOBJ(RecordsStr);
         // PrintOBJData();
     }
     /// if CSV file
