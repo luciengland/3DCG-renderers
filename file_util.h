@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+/// function that reads text file and returns lines as vector of strings
 std::vector<std::string> readLines(const std::string& path) {
     std::ifstream file(path);
     if (!file) throw std::runtime_error("Could not open file: " + path);
@@ -19,6 +20,7 @@ std::vector<std::string> readLines(const std::string& path) {
     return lines;
 }
 
+/// function to split strings 
 std::vector<std::string> split(const std::string& s, char delim) {
     std::istringstream iss(s);
     std::vector<std::string> tokens;

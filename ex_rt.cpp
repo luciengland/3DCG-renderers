@@ -113,6 +113,7 @@ void ParseOBJ(std::vector<std::string> OBJRecordStrings)
     /// parse values from OBJ file 
     for (int i = 0; i < OBJRecordStrings.size(); i++)
     {
+        /// create string stream "sstream" containing string at index i in OBJRecordStrings
         std::stringstream sstream(OBJRecordStrings[i]);
         /// check if starting character is "v" for each line
         while (std::getline(sstream, value, ' '))
