@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "Vector3.hpp"
 #include "Triangle.hpp"
-// #include "file_util.h"
+#include "file_util.h"
 using namespace std;
 
 /// set width/height of output image
@@ -17,30 +17,33 @@ const int height = 640;
 /// array to store RGB values for every pixel
 unsigned char pixels[width * height * 3];
 
-/// --------- Define triangles that make up walls of scene
-// Left Wall
-Triangle triangle01 = Triangle{Vector3{-1, 1, -2}, Vector3{-1, 1, -1}, Vector3{-1, -1, -2}};
-Triangle triangle02 = Triangle{Vector3{-1, 1, -1}, Vector3{-1, -1, -1}, Vector3{-1, -1, -2}};
-// Right Wall
-Triangle triangle03 = Triangle{Vector3{1, 1, -1}, Vector3{1, 1, -2}, Vector3{1, -1, -2}};
-Triangle triangle04 = Triangle{Vector3{1, -1, -1}, Vector3{1, 1, -1}, Vector3{1, -1, -2}};
-// Top Wall
-Triangle triangle05 = Triangle{Vector3{-1, 1, -1}, Vector3{-1, 1, -2}, Vector3{1, 1, -2}};
-Triangle triangle06 = Triangle{Vector3{1, 1, -1}, Vector3{-1, 1, -1}, Vector3{1, 1, -2}};
-// Bottom Wall
-Triangle triangle07 = Triangle{Vector3{-1, -1, -2}, Vector3{-1, -1, -1}, Vector3{1, -1, -2}};
-Triangle triangle08 = Triangle{Vector3{-1, -1, -1}, Vector3{1, -1, -1}, Vector3{1, -1, -2}};
-// Back Wall
-Triangle triangle09 = Triangle{Vector3{-1, 1, -2}, Vector3{-1, -1, -2}, Vector3{1, -1, -2}};
-Triangle triangle10 = Triangle{Vector3{1, 1, -2}, Vector3{-1, 1, -2}, Vector3{1, -1, -2}};
+// /// --------- Define triangles that make up walls of scene
+// // Left Wall
+// Triangle triangle01 = Triangle{Vector3{-1, 1, -2}, Vector3{-1, 1, -1}, Vector3{-1, -1, -2}};
+// Triangle triangle02 = Triangle{Vector3{-1, 1, -1}, Vector3{-1, -1, -1}, Vector3{-1, -1, -2}};
+// // Right Wall
+// Triangle triangle03 = Triangle{Vector3{1, 1, -1}, Vector3{1, 1, -2}, Vector3{1, -1, -2}};
+// Triangle triangle04 = Triangle{Vector3{1, -1, -1}, Vector3{1, 1, -1}, Vector3{1, -1, -2}};
+// // Top Wall
+// Triangle triangle05 = Triangle{Vector3{-1, 1, -1}, Vector3{-1, 1, -2}, Vector3{1, 1, -2}};
+// Triangle triangle06 = Triangle{Vector3{1, 1, -1}, Vector3{-1, 1, -1}, Vector3{1, 1, -2}};
+// // Bottom Wall
+// Triangle triangle07 = Triangle{Vector3{-1, -1, -2}, Vector3{-1, -1, -1}, Vector3{1, -1, -2}};
+// Triangle triangle08 = Triangle{Vector3{-1, -1, -1}, Vector3{1, -1, -1}, Vector3{1, -1, -2}};
+// // Back Wall
+// Triangle triangle09 = Triangle{Vector3{-1, 1, -2}, Vector3{-1, -1, -2}, Vector3{1, -1, -2}};
+// Triangle triangle10 = Triangle{Vector3{1, 1, -2}, Vector3{-1, 1, -2}, Vector3{1, -1, -2}};
 
-/// store all triangles in vector (easier iteration)
-vector<Triangle> triangles = {
-  triangle01, triangle02,
-  triangle03, triangle04,
-  triangle05, triangle06,
-  triangle07, triangle08,
-  triangle09, triangle10};
+// /// store all triangles in vector (easier iteration)
+// vector<Triangle> triangles = {
+//   triangle01, triangle02,
+//   triangle03, triangle04,
+//   triangle05, triangle06,
+//   triangle07, triangle08,
+//   triangle09, triangle10};
+
+/// store all triangles from OBJ file
+vector<Triangle> triangles;
 
 /// set default background color (purple)
 Vector3 background_color = Vector3{150,0,225};
@@ -119,7 +122,7 @@ float trace_ray_distance(Vector3 origin, Vector3 direction)
 
 /// trace ray thru scene & calculate its resulting color
 /// bounces = max number of recursive reflection bounces 
-Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 2000)
+Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 3)
 {
   /// initialize ray color to background color
   Vector3 color = Vector3{background_color.x, background_color.y, background_color.z};
@@ -224,13 +227,158 @@ Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 2000)
   return color;
 }
 
-
+/// ---------------------------------- MAIN -----------------------------------
 int main()
 {
+  /// read all lines from OBJ file into vector of strings
+  std::vector<std::string> lines = readLines("ex.obj");
+  /// print number of lines read from OBJ file
+  cout << "Number of lines: " << lines.size() << endl;
+
+  /// print each line of OBJ file
+  // for (const std::string& line : lines)
+  // {
+  //   std::cout << line << '\n';
+  // }
+
+  /// store vertex positions ("v")
+  vector<Vector3> vertices;
+  /// store vertex positions ("vt")
+  vector<Vector3> texture_coords;
+  /// store vertex positions ("vn")
+  vector<Vector3> vertex_normals;
+
+  /// loop thru each line of OBJ file
+  for (int i=0; i < lines.size(); i++)
+  {
+    /// get current line
+    string line = lines[i];
+    /// split line into individual strings using spaces
+    vector<string> record = split(line, ' ');
+    /// skip empty lines
+    if (record.empty() || record[0].empty())
+    {
+      continue;
+    }
+    /// if start with "v"/defines a vertex
+    if (record[0] == "v")
+    {
+      /// convert vertex coordinate strings to float
+      float x = stof(record[1]);
+      float y = stof(record[2]);
+      float z = stof(record[3]);
+      /// create Vector3 object using vertex coordinates
+      Vector3 vertex = Vector3{x,y,z};
+      /// add vertex to vector of vertices
+      vertices.push_back(vertex);
+      /// print vertex coordinates to verify
+      cout << "Vertex: " << x << ", " << y << ", " << z << endl;
+      /// print original vertex line
+      // cout << "Vertex: " << line << endl;
+    }
+    /// if start with "vt"/texture coordinate
+    else if (record[0] == "vt")
+    {
+      /// convert texture coordinate to float
+      float u = stof(record[1]);
+      float v = stof(record[2]);
+
+      /// create texture coordinate 
+      Vector3 texture_coord = Vector3{u,v,0};
+      /// store texture coordinate
+      texture_coords.push_back(texture_coord);
+    }
+    /// if start with "vn"/vertex normal
+    else if (record[0] == "vn")
+    {
+      /// convert normal coordinate to float
+      float x = stof(record[1]);
+      float y = stof(record[2]);
+      float z = stof(record[3]);
+
+      /// create vertex normal
+      Vector3 vertex_normal = Vector3{x,y,z};
+      /// store vertex normal
+      vertex_normals.push_back(vertex_normal);
+    }
+    /// if start with "f"/defines a face
+    else if (record[0] == "f")
+    {
+      /// store vertex position indices for current face
+      vector<int> face_vertex_indices;
+      /// store texture coordinate indices for current face
+      vector<int> face_texture_indices;
+      /// store vertex normal indices for current face
+      vector<int> face_normal_indices;
+      /// loop thru each vertex in face record (start index 1 bc index 0 is f)
+      for (int j = 1; j < record.size(); j++)
+      {
+        /// split face into vertex/texture/normal
+        vector<string> face_values = split(record[j], '/');
+        /// convert indices to integer (- 1 bc OBJ file indices start 1 & vector indicies start 0)
+        int vertex_index = stoi(face_values[0]) - 1;
+        int texture_index = stoi(face_values[1]) - 1;
+        int normal_index = stoi(face_values[2]) - 1;
+        /// add index to corresponding face vector
+        face_vertex_indices.push_back(vertex_index);
+        face_texture_indices.push_back(texture_index);
+        face_normal_indices.push_back(normal_index);
+        // cout << "Vertex index: " << vertex_index << endl;   /// print vertex index
+      }
+
+      /// convert face into triangle
+      for (int j = 1; j +1 < face_vertex_indices.size(); j++)
+      {
+        /// get vertex position using face vertex indices
+        Vector3 v1 = vertices[face_vertex_indices[0]];
+        Vector3 v2 = vertices[face_vertex_indices[j]];
+        Vector3 v3 = vertices[face_vertex_indices[j + 1]];
+        /// create triangle with vertices v1,v2,v3
+        Triangle triangle = Triangle{v1, v2, v3};
+        /// add triangle to triangle vector
+        triangles.push_back(triangle);
+      }
+      /// print vertex position indices
+      cout << "Vertex indices: ";
+      for (int index : face_vertex_indices)
+      {
+        cout << index << " ";
+      }
+      cout << endl;
+      /// print texture coordinate indices
+      cout << "Texture indices: ";
+      for (int index : face_texture_indices)
+      {
+        cout << index << " ";
+      }
+      cout << endl;
+      /// print vertex normal indices
+      cout << "Normal indices: ";
+      for (int index : face_normal_indices)
+      {
+        cout << index << " ";
+      }
+      cout << endl;
+      /// print indices stored for current face
+      // cout << "Face indices: ";
+      // for (int index : face_vertex_indices)
+      // {
+      //   cout << index << " ";
+      // }
+      // cout << endl;
+      // cout << "Face: " << line << endl;    /// print original face line
+    }
+  } 
+  /// print total number records stored
+  cout << "Total vertices: " << vertices.size() << endl;
+  cout << "Total texture coordinates: " << texture_coords.size() << endl;
+  cout << "Total vertex normals: " << vertex_normals.size() << endl;
+  cout << "Total triangles: " << triangles.size() << endl;
+
   /// define position, target view, up direction of camera
-  Vector3 cam_origin = Vector3{0, 0, 1};
-  Vector3 cam_lookat = Vector3{0, 0, 0};
-  Vector3 cam_up = Vector3{0, 1, 0};
+  Vector3 cam_origin = Vector3{0, 0, 3};
+  Vector3 cam_lookat = Vector3{0, 0, 0}; 
+  Vector3 cam_up = Vector3{0, 1, 0}; 
 
   /// loop thru each row of pixels from top to bottom
   for (int y = 0; y < height; y++)
@@ -251,7 +399,6 @@ int main()
         {
             x/(float)width * 2-1, -(y/(float)height * 2-1), 0
         };
-
         /// calculate direction from camera to target point
         Vector3 ray_direction = (pixel_target - cam_origin);
         /// normalize direction vector to unit length
@@ -275,3 +422,6 @@ int main()
   /// program end successfully
   return 0;
 }  
+
+// g++ rt.cpp Vector3.cpp -o rt
+
