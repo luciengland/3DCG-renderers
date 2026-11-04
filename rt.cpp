@@ -198,7 +198,7 @@ Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 3)
         /// apply diffuse lighting intensity to base color
         Vector3 diffuse = base_color * diffuse_strength;
         /// cast shadow ray toward light source
-        if (trace_ray_distance(intersection_point, light_direction) != INFINITY)
+        if (trace_ray_distance(intersection_point + light_direction * 0.00001, light_direction) != INFINITY)
         {
           /// if another triangle blocks the light, remove diffuse light
           diffuse = Vector3{0,0,0};
@@ -338,27 +338,27 @@ int main()
         /// add triangle to triangle vector
         triangles.push_back(triangle);
       }
-      /// print vertex position indices
-      cout << "Vertex indices: ";
-      for (int index : face_vertex_indices)
-      {
-        cout << index << " ";
-      }
-      cout << endl;
-      /// print texture coordinate indices
-      cout << "Texture indices: ";
-      for (int index : face_texture_indices)
-      {
-        cout << index << " ";
-      }
-      cout << endl;
-      /// print vertex normal indices
-      cout << "Normal indices: ";
-      for (int index : face_normal_indices)
-      {
-        cout << index << " ";
-      }
-      cout << endl;
+      // /// print vertex position indices
+      // cout << "Vertex indices: ";
+      // for (int index : face_vertex_indices)
+      // {
+      //   cout << index << " ";
+      // }
+      // cout << endl;
+      // /// print texture coordinate indices
+      // cout << "Texture indices: ";
+      // for (int index : face_texture_indices)
+      // {
+      //   cout << index << " ";
+      // }
+      // cout << endl;
+      // /// print vertex normal indices
+      // cout << "Normal indices: ";
+      // for (int index : face_normal_indices)
+      // {
+      //   cout << index << " ";
+      // }
+      // cout << endl;
       /// print indices stored for current face
       // cout << "Face indices: ";
       // for (int index : face_vertex_indices)
@@ -374,6 +374,15 @@ int main()
   cout << "Total texture coordinates: " << texture_coords.size() << endl;
   cout << "Total vertex normals: " << vertex_normals.size() << endl;
   cout << "Total triangles: " << triangles.size() << endl;
+
+  /// print all triangles 
+  for (const Triangle& triangle : triangles)
+  {
+    cout << "Triangle: " << (&triangle - &triangles[0] + 1) << endl;
+    cout << "Vertex 1: (" << triangle.vertex1.x << "," << triangle.vertex1.y << "," << triangle.vertex1.z << ")" << endl;
+    cout << "Vertex 2: (" << triangle.vertex2.x << "," << triangle.vertex2.y << "," << triangle.vertex2.z << ")" << endl;
+    cout << "Vertex 3: (" << triangle.vertex3.x << "," << triangle.vertex3.y << "," << triangle.vertex3.z << ")" << endl;
+  }
 
   /// define position, target view, up direction of camera
   Vector3 cam_origin = Vector3{0, 0, 3};
