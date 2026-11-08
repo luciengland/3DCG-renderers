@@ -17,38 +17,11 @@ const int height = 640;
 /// array to store RGB values for every pixel
 unsigned char pixels[width * height * 3];
 
-// /// --------- Define triangles that make up walls of scene
-// // Left Wall
-// Triangle triangle01 = Triangle{Vector3{-1, 1, -2}, Vector3{-1, 1, -1}, Vector3{-1, -1, -2}};
-// Triangle triangle02 = Triangle{Vector3{-1, 1, -1}, Vector3{-1, -1, -1}, Vector3{-1, -1, -2}};
-// // Right Wall
-// Triangle triangle03 = Triangle{Vector3{1, 1, -1}, Vector3{1, 1, -2}, Vector3{1, -1, -2}};
-// Triangle triangle04 = Triangle{Vector3{1, -1, -1}, Vector3{1, 1, -1}, Vector3{1, -1, -2}};
-// // Top Wall
-// Triangle triangle05 = Triangle{Vector3{-1, 1, -1}, Vector3{-1, 1, -2}, Vector3{1, 1, -2}};
-// Triangle triangle06 = Triangle{Vector3{1, 1, -1}, Vector3{-1, 1, -1}, Vector3{1, 1, -2}};
-// // Bottom Wall
-// Triangle triangle07 = Triangle{Vector3{-1, -1, -2}, Vector3{-1, -1, -1}, Vector3{1, -1, -2}};
-// Triangle triangle08 = Triangle{Vector3{-1, -1, -1}, Vector3{1, -1, -1}, Vector3{1, -1, -2}};
-// // Back Wall
-// Triangle triangle09 = Triangle{Vector3{-1, 1, -2}, Vector3{-1, -1, -2}, Vector3{1, -1, -2}};
-// Triangle triangle10 = Triangle{Vector3{1, 1, -2}, Vector3{-1, 1, -2}, Vector3{1, -1, -2}};
-
-// /// store all triangles in vector (easier iteration)
-// vector<Triangle> triangles = {
-//   triangle01, triangle02,
-//   triangle03, triangle04,
-//   triangle05, triangle06,
-//   triangle07, triangle08,
-//   triangle09, triangle10};
-
 /// store all triangles from OBJ file
 vector<Triangle> triangles;
 
-/// set default background color (purple)
-Vector3 background_color = Vector3{150,0,225};
-
-// const float INFINITY = 1000000;
+/// set default background color (light green)
+Vector3 background_color = Vector3{207,222,174};
 
 /// find distance to closest triangle intersected by a ray
 /// returns large value if no intersection found
@@ -57,7 +30,7 @@ float trace_ray_distance(Vector3 origin, Vector3 direction)
 /// direction: direction ray travels
 {
   /// initialize closest intersection distance
-  float closest_t = 1000000;
+  float closest_t = INFINITY;
   /// check ray against every triangle in scene
   for (const Triangle &triangle : triangles)
   {
@@ -132,7 +105,7 @@ Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 3)
     return background_color;
   
   /// initialize closest intersection distance
-  float closest_t = 1000000;
+  float closest_t = INFINITY;
 
   /// check ray intersection against every triangle 
  for (const Triangle &triangle : triangles)
@@ -189,14 +162,15 @@ Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 3)
         /// set surface base color to white
         Vector3 base_color = Vector3{255,255,255};
         /// define direction of incoming light and normalize it
-        Vector3 light_direction = Vector3{0.5,1,0.1}.normalize();
+        Vector3 light_direction = Vector3{0.5,1,1}.normalize();
         /// calculate ambient lighting 
         Vector3 ambient = base_color * 0.1;
+
         /// calculate diffuse lighting
         float diffuse_strength = max(0.f, light_direction.dot(surface_normal));
-        // float strength = abs(0.f, light_direction.dot(normal));
         /// apply diffuse lighting intensity to base color
         Vector3 diffuse = base_color * diffuse_strength;
+
         /// cast shadow ray toward light source
         if (trace_ray_distance(intersection_point + light_direction * 0.00001, light_direction) != INFINITY)
         {
@@ -205,8 +179,8 @@ Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 3)
         }
         /// initialize reflected color to black
         Vector3 reflection_color = Vector3{0,0,0};
-        /// reflection always enabled
-        if (true)
+
+        if (true)    /// reflection always enabled
         {
           /// calculate reflected ray direction (R = D - 2(N dot D)N)
           Vector3 reflection_direction = direction - surface_normal * 2 * surface_normal.dot(direction);
@@ -222,24 +196,20 @@ Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 3)
         color = final_color;
     }
   }   /// end for loop
-
   /// return ray color
   return color;
 }
 
-/// ---------------------------------- MAIN -----------------------------------
-int main()
+/// load obj file and return triangles
+vector<Triangle> parse_obj(const string& path)
 {
-  /// read all lines from OBJ file into vector of strings
-  std::vector<std::string> lines = readLines("ex.obj");
-  /// print number of lines read from OBJ file
-  cout << "Number of lines: " << lines.size() << endl;
+  /// store loaded triangles
+  vector<Triangle> loaded_triangles;
 
-  /// print each line of OBJ file
-  // for (const std::string& line : lines)
-  // {
-  //   std::cout << line << '\n';
-  // }
+  /// read all lines from OBJ file into vector of strings
+  std::vector<std::string> lines = readLines(path);
+  /// print number of lines read from OBJ file
+  // cout << "Number of lines: " << lines.size() << endl;
 
   /// store vertex positions ("v")
   vector<Vector3> vertices;
@@ -272,7 +242,7 @@ int main()
       /// add vertex to vector of vertices
       vertices.push_back(vertex);
       /// print vertex coordinates to verify
-      cout << "Vertex: " << x << ", " << y << ", " << z << endl;
+      // cout << "Vertex: " << x << ", " << y << ", " << z << endl;
       /// print original vertex line
       // cout << "Vertex: " << line << endl;
     }
@@ -282,7 +252,6 @@ int main()
       /// convert texture coordinate to float
       float u = stof(record[1]);
       float v = stof(record[2]);
-
       /// create texture coordinate 
       Vector3 texture_coord = Vector3{u,v,0};
       /// store texture coordinate
@@ -295,7 +264,6 @@ int main()
       float x = stof(record[1]);
       float y = stof(record[2]);
       float z = stof(record[3]);
-
       /// create vertex normal
       Vector3 vertex_normal = Vector3{x,y,z};
       /// store vertex normal
@@ -325,7 +293,6 @@ int main()
         face_normal_indices.push_back(normal_index);
         // cout << "Vertex index: " << vertex_index << endl;   /// print vertex index
       }
-
       /// convert face into triangle
       for (int j = 1; j +1 < face_vertex_indices.size(); j++)
       {
@@ -336,54 +303,16 @@ int main()
         /// create triangle with vertices v1,v2,v3
         Triangle triangle = Triangle{v1, v2, v3};
         /// add triangle to triangle vector
-        triangles.push_back(triangle);
+        loaded_triangles.push_back(triangle);
       }
-      // /// print vertex position indices
-      // cout << "Vertex indices: ";
-      // for (int index : face_vertex_indices)
-      // {
-      //   cout << index << " ";
-      // }
-      // cout << endl;
-      // /// print texture coordinate indices
-      // cout << "Texture indices: ";
-      // for (int index : face_texture_indices)
-      // {
-      //   cout << index << " ";
-      // }
-      // cout << endl;
-      // /// print vertex normal indices
-      // cout << "Normal indices: ";
-      // for (int index : face_normal_indices)
-      // {
-      //   cout << index << " ";
-      // }
-      // cout << endl;
-      /// print indices stored for current face
-      // cout << "Face indices: ";
-      // for (int index : face_vertex_indices)
-      // {
-      //   cout << index << " ";
-      // }
-      // cout << endl;
-      // cout << "Face: " << line << endl;    /// print original face line
     }
   } 
-  /// print total number records stored
-  cout << "Total vertices: " << vertices.size() << endl;
-  cout << "Total texture coordinates: " << texture_coords.size() << endl;
-  cout << "Total vertex normals: " << vertex_normals.size() << endl;
-  cout << "Total triangles: " << triangles.size() << endl;
+  return loaded_triangles;
+} /// end parse_obj()
 
-  /// print all triangles 
-  for (const Triangle& triangle : triangles)
-  {
-    cout << "Triangle: " << (&triangle - &triangles[0] + 1) << endl;
-    cout << "Vertex 1: (" << triangle.vertex1.x << "," << triangle.vertex1.y << "," << triangle.vertex1.z << ")" << endl;
-    cout << "Vertex 2: (" << triangle.vertex2.x << "," << triangle.vertex2.y << "," << triangle.vertex2.z << ")" << endl;
-    cout << "Vertex 3: (" << triangle.vertex3.x << "," << triangle.vertex3.y << "," << triangle.vertex3.z << ")" << endl;
-  }
-
+/// cast camera rays and store rendered colors in pixel array
+void render_image()
+{
   /// define position, target view, up direction of camera
   Vector3 cam_origin = Vector3{0, 0, 3};
   Vector3 cam_lookat = Vector3{0, 0, 0}; 
@@ -424,6 +353,16 @@ int main()
         pixels[pixel_index + 2] = b;
     }
   }
+} /// end render_image()
+
+/// ---------------------------------- MAIN -----------------------------------
+int main()
+{
+  /// load triangles from OBJ file
+  triangles = parse_obj("ex.obj");
+
+  /// render into pixel array
+  render_image();
 
   /// save completed pixel array as PNG image
   stbi_write_png("image.png", width, height, 3, pixels, width * 3);
