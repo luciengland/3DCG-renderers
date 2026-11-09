@@ -184,8 +184,13 @@ Vector3 trace_ray(Vector3 origin, Vector3 direction, int bounces = 3)
         {
           /// calculate reflected ray direction (R = D - 2(N dot D)N)
           Vector3 reflection_direction = direction - surface_normal * 2 * surface_normal.dot(direction);
+
+          /// offset reflection away from surface
+          Vector3 reflection_origin = intersection_point + reflection_direction * 0.0001f;
+
           /// recursively trace reflected ray, reduce remaining bounces, multipy reflected color
-          reflection_color = trace_ray(intersection_point, reflection_direction, bounces - 1) * 0.5;
+          reflection_color = trace_ray(reflection_origin, reflection_direction, bounces - 1) * 0.5;
+          
           /// reduce diffuse and ambient lighting 
           diffuse *= 0.5;
           ambient *= 0.5;
@@ -314,9 +319,15 @@ vector<Triangle> parse_obj(const string& path)
 void render_image()
 {
   /// define position, target view, up direction of camera
-  Vector3 cam_origin = Vector3{0, 0, 3};
-  Vector3 cam_lookat = Vector3{0, 0, 0}; 
-  Vector3 cam_up = Vector3{0, 1, 0}; 
+  Vector3 cam_origin = Vector3{2, 1, 3};
+  Vector3 cam_lookat = Vector3{0, 0, 1}; 
+  Vector3 cam_up = Vector3{0, 1, 0};
+  
+  /// calculate camera's orientation
+  Vector3 camera_forward = (cam_lookat - cam_origin).normalize();
+  Vector3 camera_right = camera_forward.cross(cam_up).normalize();
+  Vector3 camera_up = camera_right.cross(camera_forward).normalize();
+
 
   /// loop thru each row of pixels from top to bottom
   for (int y = 0; y < height; y++)
@@ -332,13 +343,21 @@ void render_image()
         unsigned char g = background_color.y;
         unsigned char b = background_color.z;
 
-        /// convert pixel coordinates into 3D coordinates (flip y-coord to match 3D coord system)
-        Vector3 pixel_target
-        {
-            x/(float)width * 2-1, -(y/(float)height * 2-1), 0
-        };
-        /// calculate direction from camera to target point
-        Vector3 ray_direction = (pixel_target - cam_origin);
+        // /// convert pixel coordinates into 3D coordinates (flip y-coord to match 3D coord system)
+        // Vector3 pixel_target
+        // {
+        //     x/(float)width * 2-1, -(y/(float)height * 2-1), 0
+        // };
+        // /// calculate direction from camera to target point
+        // Vector3 ray_direction = (pixel_target - cam_origin);
+
+        /// map pixel coordinates onto camera plane
+        float screen_x = x / (float)width * 2 - 1;
+        float screen_y = -(y / (float)height * 2 - 1);
+
+        /// calculate ray direction
+        Vector3 ray_direction = camera_forward * 3.0f + camera_right * screen_x + camera_up * screen_y;
+
         /// normalize direction vector to unit length
         Vector3 normalized_ray = ray_direction.normalize();
         /// trace ray to determine pixel color
