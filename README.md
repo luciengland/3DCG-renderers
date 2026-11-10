@@ -1,4 +1,3 @@
-# Ray Tracer 
+# Ray Tracer & Rasterizer
 
-Class: CSCI4620 (3D Computer Graphics)
-
+3D Computer Graphics (CSCI 4620)

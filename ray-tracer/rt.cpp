@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include "Vector3.hpp"
-#include "Triangle.hpp"
+#include "triangle.hpp"
 #include "file_util.h"
 using namespace std;
 
@@ -324,6 +324,9 @@ void render_image()
   Vector3 cam_up = Vector3{0, 1, 0};
   
   /// calculate camera's orientation
+  /// z-axis = | look_at - look_from |
+  /// y-axis = look_up
+  /// x-axis = z-axis cross y-axis
   Vector3 camera_forward = (cam_lookat - cam_origin).normalize();
   Vector3 camera_right = camera_forward.cross(cam_up).normalize();
   Vector3 camera_up = camera_right.cross(camera_forward).normalize();
